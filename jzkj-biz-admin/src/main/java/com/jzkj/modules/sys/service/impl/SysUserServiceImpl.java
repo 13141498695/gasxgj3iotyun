@@ -100,7 +100,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void update(SysUserEntity user) {
-		String customerPassword=user.getPassword();
+		//String customerPassword=user.getPassword();
 		if(StringUtils.isBlank(user.getPassword())){
 			user.setPassword(null);
 		}else{
@@ -110,20 +110,21 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 		this.updateById(user);
 		//保存用户与角色关系
 		sysUserRoleService.saveOrUpdate(user.getUserId(), user.getRoleIdList());
-		customerUserUpdateById(user,customerPassword);
+		//customerUserUpdateById(user,customerPassword);
 	}
 
 	////修改Customer
 	private void customerUserUpdateById(SysUserEntity user,String customerPassword) {
 		CustomerUserEntity customerUserSelectOne = customerUserService.selectById(user.getUserId());
-		if(StringUtils.isBlank(user.getPassword())){
-			customerUserSelectOne.setPassword(null);
-		}else {
-			customerUserSelectOne.setPassword(customerPassword);
+
+			if (StringUtils.isBlank(user.getPassword())) {
+				customerUserSelectOne.setPassword(null);
+			} else {
+				customerUserSelectOne.setPassword(user.getPassword());
 //			customerUserSelectOne.setPassword(DigestUtils.sha256Hex(user.getPassword()));
 //			SysUserEntity userEntity = this.selectById(user.getUserId());
 //			customerUserSelectOne.setPassword(ShiroUtils.sha256(user.getPassword(), userEntity.getSalt()));
-		}
+			}
 		customerUserService.updateById(customerUserSelectOne);
 	}
 
@@ -132,12 +133,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	public boolean updatePassword(Long userId, String password, String newPassword) {		
         SysUserEntity userEntity = new SysUserEntity();
         userEntity.setPassword(newPassword);
-        boolean updatePassword = sysUserService.update(userEntity,new EntityWrapper<SysUserEntity>().eq("user_id", userId).eq("password", password));
-        
-        CustomerUserEntity customerUserEntity = new CustomerUserEntity();
-        customerUserEntity.setPassword(newPassword);
-        updatePassword = customerUserService.update(customerUserEntity,new EntityWrapper<CustomerUserEntity>().eq("user_id", userId).eq("password", password));
-        return updatePassword;
+
+        boolean updatePassword = sysUserService.update(userEntity,new EntityWrapper<SysUserEntity>().
+				eq("user_id", userId).eq("password", password));
+        if(updatePassword){
+			System.out.println("原密码不正确");
+        }else{
+			return updatePassword;
+		}
+//        CustomerUserEntity customerUserEntity = new CustomerUserEntity();
+//        customerUserEntity.setPassword(newPassword);
+//        updatePassword = customerUserService.update(customerUserEntity,new EntityWrapper<CustomerUserEntity>().eq("user_id", userId).eq("password", password));
+        return false;
     }
 	
 	//删除系统用户

@@ -29,19 +29,26 @@ var vm = new Vue({
         getMenu: function(menuId){
             //加载菜单树
             $.get(baseURL + "sys/menu/select", function(r){
-                ztree = $.fn.zTree.init($("#menuTree"), setting, r.menuList);
+                // ztree = $.fn.zTree.init($("#menuTree"), setting, r.menuList);
+                ztree = $.fn.zTree.init($("#deptTree"), setting, r);
                 var node = ztree.getNodeByParam("menuId", vm.menu.parentId);
-                ztree.selectNode(node);
+                if (node) {
+                    ztree.selectNode(node);
+                    vm.menu.parentName = node.name;
+                } else {
+                    node = ztree.getNodeByParam("menuId", 0);
+                    ztree.selectNode(node);
+                    vm.menu.parentName = node.name;
+                }
+            });
 
-                vm.menu.parentName = node.name;
-            })
         },
         add: function(){
             vm.showList = false;
             vm.title = "新增";
-            vm.menu = {parentName:null,parentId:0,type:1,orderNum:0};
+            var parentId = 0;
             vm.getMenu();
-        },
+            },
         update: function () {
             var menuId = getMenuId();
             if(menuId == null){
@@ -101,15 +108,10 @@ var vm = new Vue({
                 }
             });
         },
-        menuTree: function(){
+        menuTree: function () {
             layer.open({
-                type: 1,
-                offset: '50px',
-                skin: 'layui-layer-molv',
                 title: "选择菜单",
                 area: ['300px', '450px'],
-                shade: 0,
-                shadeClose: false,
                 content: jQuery("#menuLayer"),
                 btn: ['确定', '取消'],
                 btn1: function (index) {

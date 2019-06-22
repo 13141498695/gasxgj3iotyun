@@ -15,6 +15,7 @@ import com.jzkj.modules.sys.service.SysUserService;
 import com.jzkj.modules.sys.shiro.ShiroUtils;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -57,27 +58,35 @@ public class SysUserController extends AbstractController {
 		return ReturnResult.ok().put("user", getUser());
 
 	}
-	
+
 	/**
 	 * 修改登录用户密码
 	 */
 	@SysLog("修改密码")
 	@RequestMapping("/password")
 	public ReturnResult password(String password, String newPassword){
-		Assert.isBlank(newPassword, "新密码不为能空");
+		String username = ((SysUserEntity) SecurityUtils.getSubject().getPrincipal()).getUsername();
+		String oldpassword = ((SysUserEntity) SecurityUtils.getSubject().getPrincipal()).getPassword();
 
-		//原密码
-		password = ShiroUtils.sha256(password, getUser().getSalt());
-		//新密码
-		newPassword = ShiroUtils.sha256(newPassword, getUser().getSalt());
-				
-		//更新密码
-		boolean flag = sysUserService.updatePassword(getUserId(), password, newPassword);
-		if(!flag){
-			return ReturnResult.error("原密码不正确");
+		if(!"admin".equals(username)){
+			Assert.isBlank(newPassword, "新密码不为能空");
+
+			//原密码
+			password = ShiroUtils.sha256(password, getUser().getSalt());
+			//新密码
+			newPassword = ShiroUtils.sha256(newPassword, getUser().getSalt());
+			if(password.equals(oldpassword)){
+				boolean flag = sysUserService.updatePassword(getUserId(), password, newPassword);
+				return ReturnResult.ok();
+
+			}else{
+				return ReturnResult.error("旧密码错误");
+			}
+
+		}else{
+			return ReturnResult.error("admin密码不可以修改");
 		}
-		
-		return ReturnResult.ok();
+
 	}
 	
 	/**

@@ -6,10 +6,12 @@ import com.google.code.kaptcha.Producer;
 import com.jzkj.common.utils.ReturnResult;
 import com.jzkj.modules.sys.shiro.ShiroUtils;
 
+import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -54,7 +56,7 @@ public class SysLoginController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/sys/login", method = RequestMethod.POST)
-	public ReturnResult login(String username, String password, String captcha) {
+	public ReturnResult login(String username, String password, String captcha, HttpServletRequest request) {
 		String kaptcha = ShiroUtils.getKaptcha(Constants.KAPTCHA_SESSION_KEY);
 		if(!captcha.equalsIgnoreCase(kaptcha)){
 			return ReturnResult.error("验证码不正确");

@@ -13,6 +13,7 @@ import com.jzkj.modules.sys.dao.SysUserDao;
 import com.jzkj.modules.sys.entity.SysMenuEntity;
 import com.jzkj.modules.sys.entity.SysUserEntity;
 
+import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authc.credential.CredentialsMatcher;

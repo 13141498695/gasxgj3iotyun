@@ -9,9 +9,9 @@ $(function () {
             { label: '产品版本', name: 'productVersion', sortable: false, width: 40 },
             { label: '产品类型', name: 'productType', width: 20 },
             { label: '公司', name: 'productCompany', width: 30 },
-            { label: '产品描述', name: 'productContext', width: 40 },
+            { label: '公司id', name: 'deptId', width: 30 ,hidden:true},
 
-
+            { label: '产品描述', name: 'productContext', width: 200 },
 
             /*	{ label: '联网方式', name: 'network', width: 100 },*/
 			{ label: '所属行业', name: 'productType', width: 30, formatter: function(value, options, row){
@@ -33,6 +33,15 @@ $(function () {
             { label: '创建人', name: 'createPeople', width: 20}
 
         ],
+
+        // viewrecords: true,
+        // height: 385,
+        // rowNum: 10,
+        // rowList : [10,30,50],
+        // rownumbers: true,
+        // rownumWidth: 25,
+        // autowidth:true,
+        // multiselect: true,
 		viewrecords: true,
         height: 385,
         rowNum: 10,
@@ -126,14 +135,15 @@ var vm = new Vue({
         },
         update: function () {
             var modelId = getSelectedRow();
-            console.log(modelId);
-            console.log('11111')
+
             if(modelId == null){
                 return ;
             }
             vm.showList = false;
             vm.title = "修改";
             vm.getmodel(modelId);
+           // var ue = UE.getEditor('editor');
+
             //获取角色信息
         },
         
@@ -149,6 +159,55 @@ var vm = new Vue({
                 $.ajax({
                     type: "POST",
                     url: baseURL + "sys/product/delete",
+                    contentType: "application/json",
+                    data: JSON.stringify(productId),
+                    success: function(r){
+                        if(r.code == 0){
+                            alert('操作成功', function(){
+                                location.href="modules/product/productlist.html";
+                            });
+                        }else{
+                            alert(r.msg);
+                        }
+                    }
+                });
+            });
+        },
+
+        devlopr: function () {
+            var productId = getSelectedRows();
+
+
+            if(productId == null){
+                return ;
+            }
+            confirm('确定要上线选中的记录？', function(){
+                $.ajax({
+                    type: "POST",
+                    url: baseURL + "sys/product/devlopr",
+                    contentType: "application/json",
+                    data: JSON.stringify(productId),
+                    success: function(r){
+                        if(r.code == 0){
+                            alert('操作成功', function(){
+                                location.href="modules/product/productlist.html";
+                            });
+                        }else{
+                            alert(r.msg);
+                        }
+                    }
+                });
+            });
+        },
+        low: function () {
+            var productId = getSelectedRows();
+            if(productId == null){
+                return ;
+            }
+            confirm('确定要下线选中的记录？', function(){
+                $.ajax({
+                    type: "POST",
+                    url: baseURL + "sys/product/low",
                     contentType: "application/json",
                     data: JSON.stringify(productId),
                     success: function(r){
@@ -184,6 +243,7 @@ var vm = new Vue({
         getmodel: function(productId){
             $.get(baseURL + "sys/product/info/"+productId, function(r){
                 vm.product = r.product;
+                vm.getDept();
             });
         },
         deptTree: function(){

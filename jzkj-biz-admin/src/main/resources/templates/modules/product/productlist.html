@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
+
+
+	<meta charset="utf-8">
 
 <title>产品列表</title>
 <#include "/header.html">
@@ -11,25 +13,24 @@
 	<div v-show="showList">
 		<div class="grid-btn">
 			<div class="form-group col-sm-2">
-				<input type="text" class="form-control" v-model="q.productName" @keyup.enter="query" placeholder="璇疯緭鍏ヤ骇鍝佸悕绉�">
+				<input type="text" class="form-control" v-model="q.productName" @keyup.enter="query" placeholder="请输入要查询的产品名称">
 			</div>
 			<a class="btn btn-default" @click="query">查询</a>
 		   <#if shiro.hasPermission("sys:product:save")>
 			<a class="btn btn-primary" @click="add"><i class="fa fa-plus"></i>&nbsp;添加</a>
 	             </#if>
-
 	         <#if shiro.hasPermission("sys:product:update")>
 			<a class="btn btn-primary" @click="update"><i class="fa fa-pencil-square-o"></i>&nbsp;修改</a>
 			 </#if>
 			<#if shiro.hasPermission("sys:product:delete")>
 			<a class="btn btn-primary" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
 			</#if>
-       <#if shiro.hasPermission("sys:product:delete")>
-       <a class="btn btn-primary" @click="del"><i class="fa fa-trash-o"></i>&nbsp;上线</a>
-       </#if>
-<#if shiro.hasPermission("sys:product:delete")>
-<a class="btn btn-primary" @click="del"><i class="fa fa-trash-o"></i>&nbsp;下线</a>
-</#if>
+           <#if shiro.hasPermission("sys:product:devlopr")>
+           <a class="btn btn-primary" @click="devlopr"><i class="fa fa-trash-o"></i>&nbsp;上线</a>
+           </#if>
+            <#if shiro.hasPermission("sys:product:low")>
+           <a class="btn btn-primary" @click="low"><i class="fa fa-trash-o"></i>&nbsp;下线</a>
+        </#if>
 		</div>
 	    <table id="jqGrid"></table>
 	    <div id="jqGridPager"></div>
@@ -40,6 +41,12 @@
 	<div v-show="!showList" class="panel panel-default">
 		<div class="panel-heading">{{title}}</div>
 		<form class="form-horizontal">
+			<div class="form-group">
+
+				<div class="col-sm-10">
+					<input type="hidden" class="form-control" v-model="product.productId"  id="xmid"/>
+				</div>
+			</div>
 			<div class="form-group">
 				<div class="col-sm-2 control-label">产品名称</div>
 				<div class="col-sm-10">
@@ -53,31 +60,13 @@
 				</div>
 			</div>
 
-		<!-- 	<div class="form-group">
-				<div class="col-sm-2 control-label">产品所属行业</div>
-				<div class="col-sm-10">
-					<input type="text" class="form-control" style="cursor:pointer;" v-model="product.productTypeName" @click="getDept" readonly="readonly" placeholder="所属行业"/>
 
-					<input type="text" class="form-control" v-model="product.productTypeName" style="cursor:pointer;" @click="typeTree" readonly="readonly" placeholder="请选择路信息"/>
-				
-				</div>
-			</div> -->
 				<div class="form-group">
 				<div class="col-sm-2 control-label">所属公司</div>
 				<div class="col-sm-10">
 					<input type="text" class="form-control" v-model="product.productCompany" style="cursor:pointer;" @click="deptTree" readonly="readonly" placeholder="请选择所属公司"/>
 				</div>
 			</div>
-				<!--<div class="form-group">-->
-				<!--<div class="col-sm-2 control-label">是否接入网关</div>-->
-				<!--<div class="col-sm-10">-->
-					<!--&lt;!&ndash; <input type="text" class="form-control" style="cursor:pointer;" v-model="product.gateway" placeholder="璇疯緭鍏ヤ骇鍝佺増鏈�"/> &ndash;&gt;-->
-
-					  <!--<label><input v-model="product.gateway"   type="radio" value="0">是 </label>-->
-                  <!--<label><input v-model="product.gateway" type="radio" value="1" />否</label>-->
-
-				<!--</div>-->
-			<!--</div>-->
 
 
 			<div class="form-group">
@@ -100,18 +89,24 @@
                 <label><input v-model="product.productStatus" type="radio" value="3" />下线</label>
 				</div>
 			</div>
-
-
 			<div class="form-group">
 				<div class="col-sm-2 control-label">产品描述</div>
-				<div class="col-sm-10">
-					<label><input v-model="product.productContext"  type="text" value="0">  </label>
-
-				</div>
+				<label><input v-model="product.productContext" type="text" /> </label>
 			</div>
-			<div class="form-group">
+
+       <div class="form-group">
+             <div class="col-sm-10">
+				 <label v-model="product.productContext">
+                   <textarea id="editor" type="text" style="width:960px;height:500px;"  name="show1" name="p"></textarea>
+                     <input type="button"  onclick="getLocalData()"  value="提交产品详情"/>
+					 </label>
+			 </div>
+			   </div>
+
+
+			 <div class="form-group">
 				<div class="col-sm-2 control-label"></div>
-				<input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+				<input type="button" class="btn btn-primary" @click="saveOrUpdate" value="添加"/>
 				&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
 			</div>
 		</form>
@@ -122,9 +117,169 @@
 <div id="deptLayer" style="display: none;padding:10px;">
 	<ul id="deptTree" class="ztree"></ul>
 </div>
-
 <script src="${request.contextPath}/statics/js/modules/product/product.js?_${.now?long}"></script>
+<script src="${request.contextPath}/statics/ueitor/ueditor.config.js"></script>
+<script src="${request.contextPath}/statics/ueitor/ueditor.all.min.js"></script>
+<script src="${request.contextPath}/statics/ueitor/lang/zh-cn/zh-cn.js"></script>
+<script src="${request.contextPath}/statics/ueitor/ueditor.parse.min.js"></script>
+<script type="text/javascript">
 
+    //实例化编辑器
+    //建议使用工厂方法getEditor创建和引用编辑器实例，如果在某个闭包下引用该编辑器，直接调用UE.getEditor('editor')就能拿到相关的实例
+    var ue = UE.getEditor('editor');
 
+    function isFocus(e){
+        alert(UE.getEditor('editor').isFocus());
+        UE.dom.domUtils.preventDefault(e)
+    }
+    function setblur(e){
+        UE.getEditor('editor').blur();
+        UE.dom.domUtils.preventDefault(e)
+    }
+    function insertHtml() {
+        var value = prompt('插入html代码', '');
+        UE.getEditor('editor').execCommand('insertHtml', value)
+    }
+    function createEditor() {
+        enableBtn();
+        UE.getEditor('editor');
+    }
+    function getAllHtml() {
+        alert(UE.getEditor('editor').getAllHtml())
+    }
+    function getContent() {
+        var arr = [];
+        arr.push("使用editor.getContent()方法可以获得编辑器的内容");
+        arr.push("内容为：");
+        arr.push(UE.getEditor('editor').getContent());
+        alert(arr.join("\n"));
+    }
+    function getPlainTxt() {
+        var arr = [];
+        arr.push("使用editor.getPlainTxt()方法可以获得编辑器的带格式的纯文本内容");
+        arr.push("内容为：");
+        arr.push(UE.getEditor('editor').getPlainTxt());
+        alert(arr.join('\n'))
+    }
+    function setContent(isAppendTo) {
+        var arr = [];
+        arr.push("使用editor.setContent('欢迎使用ueditor')方法可以设置编辑器的内容");
+        UE.getEditor('editor').setContent('欢迎使用ueditor', isAppendTo);
+        alert(arr.join("\n"));
+    }
+    function setDisabled() {
+        UE.getEditor('editor').setDisabled('fullscreen');
+        disableBtn("enable");
+    }
+
+    function setEnabled() {
+        UE.getEditor('editor').setEnabled();
+        enableBtn();
+    }
+
+    function getText() {
+        //当你点击按钮时编辑区域已经失去了焦点，如果直接用getText将不会得到内容，所以要在选回来，然后取得内容
+        var range = UE.getEditor('editor').selection.getRange();
+        range.select();
+        var txt = UE.getEditor('editor').selection.getText();
+        alert(txt)
+    }
+
+    function getContentTxt() {
+        var arr = [];
+        arr.push("使用editor.getContentTxt()方法可以获得编辑器的纯文本内容");
+        arr.push("编辑器的纯文本内容为：");
+        arr.push(UE.getEditor('editor').getContentTxt());
+        alert(arr.join("\n"));
+    }
+    function hasContent() {
+        var arr = [];
+        arr.push("使用editor.hasContents()方法判断编辑器里是否有内容");
+        arr.push("判断结果为：");
+        arr.push(UE.getEditor('editor').hasContents());
+        alert(arr.join("\n"));
+    }
+    function setFocus() {
+        UE.getEditor('editor').focus();
+    }
+    function deleteEditor() {
+        disableBtn();
+        UE.getEditor('editor').destroy();
+    }
+    function disableBtn(str) {
+        var div = document.getElementById('btns');
+        var btns = UE.dom.domUtils.getElementsByTagName(div, "button");
+        for (var i = 0, btn; btn = btns[i++];) {
+            if (btn.id == str) {
+                UE.dom.domUtils.removeAttributes(btn, ["disabled"]);
+            } else {
+                btn.setAttribute("disabled", "true");
+            }
+        }
+    }
+    function enableBtn() {
+        var div = document.getElementById('btns');
+        var btns = UE.dom.domUtils.getElementsByTagName(div, "button");
+        for (var i = 0, btn; btn = btns[i++];) {
+            UE.dom.domUtils.removeAttributes(btn, ["disabled"]);
+        }
+    }
+
+    function getLocalData () {
+
+       // var productContext = UE.getEditor('editor').getContent();
+
+        var productContext2= UE.getEditor('editor').getPlainTxt()
+        //$("show1").val();
+        var productContext=$('textarea[name="show1"]').val();
+        alert(productContext2);
+        //   alert(UE.getEditor('editor').getContent());
+        var url = "http://localhost:8073/sys/productContext/productContext";
+        // console.log(productContext);
+        $.ajax({
+            type:"POST",
+            url:url,
+            contentType:"application/json",
+            data: productContext2,
+            success:function(r){
+                if(r.code == 0){+
+
+                    alert('操作成功，不要重复提交', function(){
+                    });
+                }else{
+                    alert(r.msg);
+                }
+            }
+        });
+
+    }
+    $("p").mouseout(function(){
+        var productContext2= UE.getEditor('editor').getAllHtml()
+        //$("show1").val();
+        var productContext=$('textarea[name="show1"]').val();
+        alert(productContext);
+        //   alert(UE.getEditor('editor').getContent());
+        var url = "http://localhost:8073/sys/productContext/productContext";
+        // console.log(productContext);
+        $.ajax({
+            type:"POST",
+            url:url,
+            contentType:"application/json",
+            data: productContext,
+            success:function(r){
+                if(r.code == 0){
+                    alert('操作成功，不要重复提交', function(){
+                    });
+                }else{
+                    alert(r.msg);
+                }
+            }
+        });
+    });
+    function clearLocalData () {
+        UE.getEditor('editor').execCommand( "clearlocaldata" );
+        alert("已清空草稿箱")
+    }
+</script>
 </body>
 </html>

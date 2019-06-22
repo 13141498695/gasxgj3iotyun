@@ -1,3 +1,4 @@
+
 $(function () {
     $("#jqGrid").jqGrid({
         url: baseURL + 'sys/dict/list',

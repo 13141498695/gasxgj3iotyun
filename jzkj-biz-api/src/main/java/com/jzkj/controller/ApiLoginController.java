@@ -44,7 +44,7 @@ public class ApiLoginController {
     @ApiOperation("登录")
     public ReturnResult login(@RequestBody LoginForm form){
         //表单校验
-        ValidatorUtils.validateEntity(form);
+
 
         //用户登录
         Map<String, Object> map = userService.login(form);

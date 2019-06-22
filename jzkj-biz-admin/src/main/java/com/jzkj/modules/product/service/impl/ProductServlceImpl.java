@@ -1,5 +1,6 @@
 package com.jzkj.modules.product.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,8 +44,10 @@ private ProductDao productdao;
 	private CustomerUserService customerUserService;
 	@Override
 	public int save(ProductEntity product) {
+		ProductEntity products=this.productdao.selectLastEntity();
+		product.setProductId(products.getProductId());
 		// TODO Auto-generated method stub
-		return productdao.insertSelective(product);
+		return productdao.updateByPrimaryKeySelective(product);
 	}
 
 	@Override
@@ -96,7 +99,29 @@ private ProductDao productdao;
         return new PageUtils(page);
 	}
 
+	@Override
+	public void devlopr(String s) {
+		ProductEntity productEntity=this.productdao.selectByPrimaryKey(s);
+		productEntity.setProductStatus(2);
+		this.productdao.updateByPrimaryKeySelective(productEntity);
+	}
 
-	
+	@Override
+	public void low(String s) {
+		ProductEntity productEntity=this.productdao.selectByPrimaryKey(s);
+		productEntity.setProductStatus(3);
+		this.productdao.updateByPrimaryKeySelective(productEntity);
+	}
 
+	@Override
+	public List<ProductEntity> selectAll() {
+
+		return this.productdao.productlist();
+	}
+
+	@Override
+	public void saveContext(ProductEntity product) {
+		product.setCreateTime(new Date());
+		this.productdao.insertSelective(product);
+	}
 }
